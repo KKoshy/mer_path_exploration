@@ -1,3 +1,6 @@
+"""
+This file contains contants for svf analysis data in svf files.
+"""
 import os
 
 DATA_DIR = "data"

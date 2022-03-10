@@ -1,3 +1,6 @@
+"""
+This file contains constants for rvf analysis for data in rvf files.
+"""
 import os
 
 
