@@ -3,7 +3,6 @@ This file contains constants for rvf analysis for data in rvf files.
 """
 import os
 
-
 SITE_RVF = os.path.join('data', 'mer2_site_{}_master.rvf')
 REFERENCE_FRAME = ['name', 'index1']
 OFFSET = ['x', 'y', 'z']

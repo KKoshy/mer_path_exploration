@@ -1,18 +1,39 @@
 """
 This file comprises of the necessary functions to collect data from site vector frame file.
 """
-import xml.etree.ElementTree as ET
 
+import os
 import shutil
-import pandas as pd
-import matplotlib.pyplot as plt
-
+import sys
+import xml.etree.ElementTree as ET
 from zipfile import ZipFile
+
+import matplotlib.pyplot as plt
+import pandas as pd
+
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
+from lib.common import (
+    DATA_ZIP,
+    RESULTS_EXCEL,
+    RESULTS_PLOT,
+    get_derivation_data,
+    get_offset_data,
+    get_orientation_data,
+    get_reference_frame_data,
+)
+from lib.svf_data_fields import (
+    DATA_DIR,
+    DERIVATION,
+    MASTER_SVF,
+    NUMERIC_FIELDS,
+    OFFSET,
+    ORIENTATION,
+    REFERENCE_FRAME,
+    SOLUTION_FIELDS,
+    SVF_SHEET,
+)
 from logs.log_config import get_logger
-from lib.common import RESULTS_EXCEL, RESULTS_PLOT, DATA_ZIP, get_reference_frame_data, \
-    get_offset_data, get_orientation_data, get_derivation_data
-from lib.svf_data_fields import REFERENCE_FRAME, OFFSET, ORIENTATION, DERIVATION, SOLUTION_FIELDS, \
-    MASTER_SVF, SVF_SHEET, NUMERIC_FIELDS, DATA_DIR
 from rvf_analysis.get_rvf_data import CollectRVFData
 
 
@@ -20,6 +41,7 @@ class CollectSVFData:
     """
     Collects SVF data master.svf file
     """
+
     def __init__(self):
         """
         Constructor for CollectSVFData
@@ -35,16 +57,18 @@ class CollectSVFData:
         Creates 3-dimensional plot based on svf x, y, z co-ordinates
         :return: None
         """
-        self.logger.info("Generating path traced by MER2 as 3-dimensional interactive plot")
-        x, y, z = self.site_frame['x'], self.site_frame['y'], self.site_frame['z']
+        self.logger.info(
+            "Generating path traced by MER2 as 3-dimensional interactive plot"
+        )
+        x, y, z = self.site_frame["x"], self.site_frame["y"], self.site_frame["z"]
         fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        ax.plot3D(x, y, z, 'green', label='svf_data_path')
-        ax.set_title('Site Vector Frame Data Analysis (Path traced by MER2)')
-        ax.set_xlabel('$X$')
-        ax.set_ylabel('$Y$')
-        ax.set_zlabel('$Z$')
-        ax.legend(loc='upper left')
+        ax = fig.add_subplot(111, projection="3d")
+        ax.plot3D(x, y, z, "green", label="svf_data_path")
+        ax.set_title("Site Vector Frame Data Analysis (Path traced by MER2)")
+        ax.set_xlabel("$X$")
+        ax.set_ylabel("$Y$")
+        ax.set_zlabel("$Z$")
+        ax.legend(loc="upper left")
         plt.savefig(RESULTS_PLOT, dpi=1080)
         self.logger.info("Close the plot to continue execution")
         plt.show()
@@ -65,7 +89,7 @@ class CollectSVFData:
         :return: None
         """
         self.logger.info("Collecting RVF data from SVF")
-        rvf_data_frames = self.site_frame['ref_frame_index1'].to_list()
+        rvf_data_frames = self.site_frame["ref_frame_index1"].to_list()
         for rvf_data_frame in rvf_data_frames:
             R = CollectRVFData(rvf_data_frame.zfill(3))
             R.collect_rvf_data()
@@ -94,7 +118,9 @@ class CollectSVFData:
         :return: None
         """
         self.logger.info("Collecting SVF data")
-        site_frame_fields = [value for i, value in enumerate(self.root) if value.tag == 'solution']
+        site_frame_fields = [
+            value for i, value in enumerate(self.root) if value.tag == "solution"
+        ]
         site_frame_data = []
         for solution in site_frame_fields:
             solution_data = {}
@@ -102,17 +128,25 @@ class CollectSVFData:
                 solution_data[field] = solution.attrib[field]
             params = [param for param in solution]
             for param in params:
-                if param.tag == 'reference_frame':
-                    solution_data = get_reference_frame_data(param, solution_data, REFERENCE_FRAME)
-                if param.tag == 'offset':
+                if param.tag == "reference_frame":
+                    solution_data = get_reference_frame_data(
+                        param, solution_data, REFERENCE_FRAME
+                    )
+                if param.tag == "offset":
                     solution_data = get_offset_data(param, solution_data, OFFSET)
-                if param.tag == 'orientation':
-                    solution_data = get_orientation_data(param, solution_data, ORIENTATION)
-                if param.tag == 'derivation':
-                    solution_data = get_derivation_data(param, solution_data, DERIVATION)
+                if param.tag == "orientation":
+                    solution_data = get_orientation_data(
+                        param, solution_data, ORIENTATION
+                    )
+                if param.tag == "derivation":
+                    solution_data = get_derivation_data(
+                        param, solution_data, DERIVATION
+                    )
             site_frame_data.append(solution_data)
         self.site_frame = pd.DataFrame(site_frame_data)
-        self.site_frame[NUMERIC_FIELDS] = self.site_frame[NUMERIC_FIELDS].apply(pd.to_numeric)
+        self.site_frame[NUMERIC_FIELDS] = self.site_frame[NUMERIC_FIELDS].apply(
+            pd.to_numeric
+        )
         self.get_graphical_result()
 
 
@@ -123,4 +157,4 @@ if __name__ == "__main__":
     C.get_results(results)
     C.collect_rvf_from_svf(results)
     C.remove_data_dir()
-    results.save()
+    results.close()

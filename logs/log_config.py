@@ -2,6 +2,7 @@
 This file contains function essential for logger configuration
 """
 import logging
+
 from lib.common import LOG_FILE
 
 
@@ -11,10 +12,13 @@ def get_logger():
     :return: None
     """
 
-    logging.basicConfig(filename=LOG_FILE, filemode='w', level=logging.DEBUG,
-                        format='%(asctime)s - %(name)s - '
-                               '%(levelname)s - %(message)s')
-    logger = logging.getLogger('mer_path_exploration.log')
+    logging.basicConfig(
+        filename=LOG_FILE,
+        filemode="w",
+        level=logging.DEBUG,
+        format="%(asctime)s - %(name)s - " "%(levelname)s - %(message)s",
+    )
+    logger = logging.getLogger("mer_path_exploration.log")
     logger.setLevel(logging.DEBUG)
     ch = logging.StreamHandler()
     ch.setLevel(logging.DEBUG)
@@ -23,6 +27,3 @@ def get_logger():
     ch.setFormatter(formatter)
     logger.addHandler(ch)
     return logger
-
-
-

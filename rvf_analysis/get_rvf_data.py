@@ -1,14 +1,32 @@
 """
 This file contains the necessary functions to collect data from rover vector frame files.
 """
+
+import os
+import sys
 import xml.etree.ElementTree as ET
+
 import pandas as pd
 
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
+from lib.common import (
+    RESULTS_EXCEL,
+    get_derivation_data,
+    get_offset_data,
+    get_orientation_data,
+    get_reference_frame_data,
+)
+from lib.rvf_data_fields import (
+    DERIVATION,
+    OFFSET,
+    ORIENTATION,
+    REFERENCE_FRAME,
+    RVF_SHEET,
+    SITE_RVF,
+    SOLUTION_FIELDS,
+)
 from logs.log_config import get_logger
-from lib.rvf_data_fields import REFERENCE_FRAME, OFFSET, ORIENTATION, DERIVATION, SOLUTION_FIELDS, \
-    SITE_RVF, RVF_SHEET
-from lib.common import RESULTS_EXCEL, get_reference_frame_data, get_offset_data, get_orientation_data, \
-    get_derivation_data
 
 
 class CollectRVFData:
@@ -36,7 +54,7 @@ class CollectRVFData:
         """
         rvf_result_sheet = RVF_SHEET.format(self.index_value)
         self.logger.info("Generating xlsx result for {}".format(rvf_result_sheet))
-        self.rover_frame.to_excel(results, rvf_result_sheet)
+        self.rover_frame.to_excel(excel_writer=results, sheet_name=rvf_result_sheet)
 
     def collect_rvf_data(self):
         """
@@ -44,7 +62,9 @@ class CollectRVFData:
         :return: None
         """
         self.logger.info("Collecting RVF data")
-        rover_frame_fields = [value for i, value in enumerate(self.root) if value.tag == 'solution']
+        rover_frame_fields = [
+            value for i, value in enumerate(self.root) if value.tag == "solution"
+        ]
         rover_frame_data = []
         for solution in rover_frame_fields:
             solution_data = {}
@@ -52,21 +72,27 @@ class CollectRVFData:
                 solution_data[field] = solution.attrib[field]
             params = [param for param in solution]
             for param in params:
-                if param.tag == 'reference_frame':
-                    solution_data = get_reference_frame_data(param, solution_data, REFERENCE_FRAME)
-                if param.tag == 'offset':
+                if param.tag == "reference_frame":
+                    solution_data = get_reference_frame_data(
+                        param, solution_data, REFERENCE_FRAME
+                    )
+                if param.tag == "offset":
                     solution_data = get_offset_data(param, solution_data, OFFSET)
-                if param.tag == 'orientation':
-                    solution_data = get_orientation_data(param, solution_data, ORIENTATION)
-                if param.tag == 'derivation':
-                    solution_data = get_derivation_data(param, solution_data, DERIVATION)
+                if param.tag == "orientation":
+                    solution_data = get_orientation_data(
+                        param, solution_data, ORIENTATION
+                    )
+                if param.tag == "derivation":
+                    solution_data = get_derivation_data(
+                        param, solution_data, DERIVATION
+                    )
             rover_frame_data.append(solution_data)
         self.rover_frame = pd.DataFrame(rover_frame_data)
 
 
-if __name__ == "--main__":
-    C = CollectRVFData('000')
+if __name__ == "__main__":
+    C = CollectRVFData("000")
     C.collect_rvf_data()
     results = pd.ExcelWriter(RESULTS_EXCEL)
     C.get_results(results)
-    results.save()
+    results.close()
