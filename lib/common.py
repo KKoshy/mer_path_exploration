@@ -4,12 +4,12 @@ This file contains data and functions which are common for rvf and svf data anal
 import os
 from datetime import datetime
 
-RESULTS_EXCEL = os.path.join("reports",
-                             "mer_result_analysis_{}.xlsx".format(datetime.now().strftime("%Y-%m-%d-%H-%M-%S")))
-RESULTS_PLOT = os.path.join("reports",
-                            "mer_result_plot_{}.png".format(datetime.now().strftime("%Y-%m-%d-%H-%M-%S")))
+time_now = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+RESULTS_EXCEL = os.path.join("reports", "mer_result_analysis_{}.xlsx".format(time_now))
+RESULTS_PLOT = os.path.join("reports", "mer_result_plot_{}.png".format(time_now))
 DATA_ZIP = "data.zip"
-LOG_FILE = os.path.join("logs", "mer_path_exploration_{}.log".format(datetime.now().strftime("%Y-%m-%d-%H-%M-%S")))
+LOG_FILE = os.path.join("logs", "mer_path_exploration_{}.log".format(time_now))
+
 
 def get_reference_frame_data(param, solution_data, ref_frame):
     """
@@ -20,7 +20,7 @@ def get_reference_frame_data(param, solution_data, ref_frame):
     :return: updated solution_data
     """
     for field in ref_frame:
-        solution_data['ref_frame_' + field] = param.attrib[field]
+        solution_data["ref_frame_" + field] = param.attrib[field]
     return solution_data
 
 
@@ -59,5 +59,5 @@ def get_derivation_data(param, solution_data, derivation):
     :return: updated solution_data
     """
     for field in derivation:
-        solution_data['derive_' + field] = param.attrib[field]
+        solution_data["derive_" + field] = param.attrib[field]
     return solution_data
